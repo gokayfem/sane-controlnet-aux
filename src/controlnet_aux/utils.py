@@ -547,5 +547,4 @@ def load_image(image_path: str) -> np.ndarray:
     image = ImageOps.exif_transpose(image)
 
     image.convert("RGB")
-    image = np.asarray(image)
     return image

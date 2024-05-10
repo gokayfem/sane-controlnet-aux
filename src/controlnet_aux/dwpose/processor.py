@@ -1,5 +1,5 @@
 from .detector import DWPoseDetector
-
+from PIL import Image
 from typing import Optional
 import numpy as np
 import torch
@@ -44,7 +44,7 @@ class DWPoseProcessor:
 
     def __call__(
         self,
-        image: np.ndarray,
+        image: Image,
         detect_body: bool = True,
         detect_hand: bool = False,
         detect_face: bool = False,
@@ -52,8 +52,7 @@ class DWPoseProcessor:
     ) -> np.ndarray:
         """
         Args:
-            image: Image to process. Can be a single image or a batch of images.
-                Image should be in the format (H, W, C) or (B, H, W, C).
+            image: Image to process. Shape is (H, W, C).
             detect_body: Whether to predict body keypoints. Defaults to True.
             detect_hand: Whether to predict hand keypoints. Defaults to False.
             detect_face: Whether to predict face keypoints. Defaults to False.
@@ -66,15 +65,15 @@ class DWPoseProcessor:
             np.ndarray: Processed image with keypoints drawn.
             Shape is (B, H, W, C).
         """
+        image = np.asarray(image)
 
-        import numpy as np
+        if len(image.shape) != 3:
+            raise ValueError(
+                f"Invalid shape '{image.shape}'"
+                "Only images with shape (H, W, C) are supported."
+            )
 
-        if len(image.shape) == 3:
-            image = image[np.newaxis]
-        elif len(image.shape) == 4:
-            pass
-        else:
-            raise ValueError(f"Invalid shape {image.shape}")
+        image = image[np.newaxis]
 
         batch_size = image.shape[0]
         pose_images = None
