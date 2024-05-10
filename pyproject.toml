@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools", "wheel", "setuptools_scm[toml]>=7"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+git_describe_command= 'git describe --tags --abbrev=0 --dirty --match "sane_controlnet_aux_v*"'
+tag_regex = "^sane_controlnet_aux_v(?P<version>.*)$"
+
+[project]
+name = "sane-controlnet-aux"
+dynamic = ["version"]
+description = "A fork of ComfyUI's ControlNet auxiliary preprocessors for use outside of ComfyUI."
+readme = "README.md"
+authors = [{ name = "Vedat Baday <badayvedat@gmail.com>" }]
+requires-python = ">=3.8"
+dependencies = [
+    "torch",
+    "importlib_metadata",
+    "huggingface_hub",
+    "scipy",
+    "opencv-python-headless>=4.7.0.72",
+    "filelock",
+    "numpy",
+    "Pillow",
+    "einops",
+    "torchvision",
+    "pyyaml",
+    "scikit-image",
+    "python-dateutil",
+    "mediapipe",
+    "svglib",
+    "fvcore",
+    "yapf",
+    "omegaconf",
+    "ftfy",
+    "addict",
+    "yacs",
+    "trimesh[easy]",
+    "albumentations",
+    "scikit-learn",
+]
+
+[project.urls]
+repository = "https://github.com/badayvedat/sane-controlnet-aux"

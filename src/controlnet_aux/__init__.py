@@ -1,1 +1,2 @@
-#Dummy file ensuring this package will be recognized
+from .dwpose import DWPoseProcessor
+
