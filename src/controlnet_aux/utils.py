@@ -29,23 +29,23 @@ USE_SYMLINKS = False
 
 try:
     annotator_ckpts_path = os.environ['AUX_ANNOTATOR_CKPTS_PATH']
-except:
+except Exception:
     warnings.warn("Custom pressesor model path not set successfully.")
     pass
 
 try:
     USE_SYMLINKS = eval(os.environ['AUX_USE_SYMLINKS'])
-except:
+except Exception:
     warnings.warn("USE_SYMLINKS not set successfully. Using default value: False to download models.")
     pass
 
 try:
     temp_dir = os.environ['AUX_TEMP_DIR']
     if len(temp_dir) >= 60:
-        warnings.warn(f"custom temp dir is too long. Using default")
+        warnings.warn("custom temp dir is too long. Using default")
         temp_dir = tempfile.gettempdir()
-except:
-    warnings.warn(f"custom temp dir not set successfully")
+except Exception:
+    warnings.warn("custom temp dir not set successfully")
     pass
 
 here = Path(__file__).parent.resolve()
@@ -140,8 +140,8 @@ def get_upscale_method(method_str):
 def pad64(x):
     return int(np.ceil(float(x) / 64.0) * 64 - x)
 
-#https://github.com/Mikubill/sd-webui-controlnet/blob/main/scripts/processor.py#L17
-#Added upscale_method, mode params
+# https://github.com/Mikubill/sd-webui-controlnet/blob/1b7ae7dbec8ed4d9228f8849a31e49eef51ee1b8/scripts/processor.py#L22-L39
+# Added upscale_method, mode params
 def resize_image_with_pad(input_image, resolution, upscale_method = "", skip_hwc3=False, mode='edge'):
     if skip_hwc3:
         img = input_image
@@ -171,7 +171,7 @@ def common_input_validate(input_image, output_type, **kwargs):
             warnings.warn("return_pil is deprecated. Use output_type instead.", DeprecationWarning)
             output_type = "pil" if kwargs["return_pil"] else "np"
     
-    if type(output_type) is bool:
+    if isinstance(output_type, bool):
         warnings.warn("Passing `True` or `False` to `output_type` is deprecated and will raise an error in future versions")
         if output_type:
             output_type = "pil"
@@ -268,7 +268,7 @@ def custom_torch_download(filename, ckpts_dir=annotator_ckpts_path):
             model_url = "https://download.pytorch.org/models/"+filename
             try:
                 download_url_to_file(url = model_url, dst = model_path)
-            except:
+            except Exception:
                 warnings.warn(f"SSL verify failed, try use HTTP instead. {filename}'s hash will be checked")
                 download_url_to_file(url = model_url, dst = model_path)
                 assert check_hash_from_torch_hub(model_path, filename), f"Hash check failed as file {filename} is corrupted"
@@ -308,7 +308,7 @@ def custom_hf_download(pretrained_model_or_path, filename, cache_dir=temp_dir, c
                       "And do not purge the cache folder after downloading.\n",\
                       "Otherwise, you will have to re-download the models every time you run the script.\n",\
                       "You can use USE_SYMLINKS: False in config.yaml to avoid this behavior.")
-            except:
+            except Exception:
                 print("Maybe not able to create symlink. Disable using symlinks.")
                 use_symlinks = False
                 cache_dir_d = os.path.join(cache_dir, "ckpts", pretrained_model_or_path)

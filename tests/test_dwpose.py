@@ -5,7 +5,5 @@ from controlnet_aux.utils import load_image
 def test_processor():
     image = load_image("tests/test.jpg")
     print(image.shape)
-    processor = DWPoseProcessor(device="mps")
-    print("Processor created.")
+    processor = DWPoseProcessor()
     out = processor(image)
-    breakpoint()
