@@ -37,7 +37,7 @@ class Wholebody:
             try:
                 import onnxruntime as ort
                 self.det = ort.InferenceSession(det_model_path, providers=ort_providers)
-            except:
+            except Exception:
                 print(f"Failed to load onnxruntime with {self.det.get_providers()}.\nPlease change EP_list in the config.yaml and restart ComfyUI")
                 self.det = ort.InferenceSession(det_model_path, providers=["CPUExecutionProvider"])
         elif self.det_model_type == "cv2":
@@ -45,12 +45,12 @@ class Wholebody:
                 self.det = cv2.dnn.readNetFromONNX(det_model_path)
                 self.det.setPreferableBackend(cv2_backend)
                 self.det.setPreferableTarget(cv2_providers)
-            except:
+            except Exception:
                 print("TopK operators may not work on your OpenCV, try use onnxruntime with CPUExecutionProvider")
                 try:
                     import onnxruntime as ort
                     self.det = ort.InferenceSession(det_model_path, providers=["CPUExecutionProvider"])
-                except:
+                except Exception:
                     print(f"Failed to load {det_model_path}, you can use other models instead")
         else:
             self.det = torch.jit.load(det_model_path)
@@ -62,7 +62,7 @@ class Wholebody:
             try:
                 import onnxruntime as ort
                 self.pose = ort.InferenceSession(pose_model_path, providers=ort_providers)
-            except:
+            except Exception:
                 print(f"Failed to load onnxruntime with {self.pose.get_providers()}.\nPlease change EP_list in the config.yaml and restart ComfyUI")
                 self.pose = ort.InferenceSession(pose_model_path, providers=["CPUExecutionProvider"])
         elif self.pose_model_type == "cv2":

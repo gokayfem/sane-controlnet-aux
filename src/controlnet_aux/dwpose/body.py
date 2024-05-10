@@ -1,13 +1,10 @@
 import cv2
 import numpy as np
 import math
-import time
 from scipy.ndimage.filters import gaussian_filter
 import matplotlib.pyplot as plt
-import matplotlib
 import torch
-from torchvision import transforms
-from typing import NamedTuple, List, Union
+from typing import List
 
 from . import util
 from .model import bodypose_model
@@ -126,10 +123,8 @@ class Body(object):
                         startend = list(zip(np.linspace(candA[i][0], candB[j][0], num=mid_num), \
                                             np.linspace(candA[i][1], candB[j][1], num=mid_num)))
 
-                        vec_x = np.array([score_mid[int(round(startend[I][1])), int(round(startend[I][0])), 0] \
-                                          for I in range(len(startend))])
-                        vec_y = np.array([score_mid[int(round(startend[I][1])), int(round(startend[I][0])), 1] \
-                                          for I in range(len(startend))])
+                        vec_x = np.array([score_mid[int(round(startend[I][1])), int(round(startend[I][0])), 0] for I in range(len(startend))]) # noqa: E741
+                        vec_y = np.array([score_mid[int(round(startend[I][1])), int(round(startend[I][0])), 1] for I in range(len(startend))]) # noqa: E741
 
                         score_midpts = np.multiply(vec_x, vec[0]) + np.multiply(vec_y, vec[1])
                         score_with_dist_prior = sum(score_midpts) / len(score_midpts) + min(

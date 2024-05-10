@@ -6,25 +6,19 @@
 # 5th Edited by ControlNet (Improved JSON serialization/deserialization, and lots of bug fixs)
 # This preprocessor is licensed by CMU for non-commercial use only.
 
-import os
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 import json
 import torch
 import numpy as np
 from . import util
-from .body import Body, BodyResult, Keypoint
-from .hand import Hand
-from .face import Face
-from .types import PoseResult, HandResult, FaceResult
-from huggingface_hub import hf_hub_download
+from .body import BodyResult, Keypoint
+from .types import PoseResult
 from .wholebody import Wholebody
 import warnings
 from controlnet_aux.utils import HWC3, resize_image_with_pad, common_input_validate, custom_hf_download
-import cv2
 from PIL import Image
 
-from typing import Tuple, List, Callable, Union, Optional
+from typing import Tuple, List, Union, Optional
 
 def draw_poses(poses: List[PoseResult], H, W, draw_body=True, draw_hand=True, draw_face=True):
     """
