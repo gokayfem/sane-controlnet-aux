@@ -15,12 +15,20 @@ from .body import BodyResult, Keypoint
 from .types import PoseResult
 from .wholebody import Wholebody
 import warnings
-from controlnet_aux.utils import HWC3, resize_image_with_pad, common_input_validate, custom_hf_download
+from controlnet_aux.utils import (
+    HWC3,
+    resize_image_with_pad,
+    common_input_validate,
+    custom_hf_download,
+)
 from PIL import Image
 
 from typing import Tuple, List, Union, Optional
 
-def draw_poses(poses: List[PoseResult], H, W, draw_body=True, draw_hand=True, draw_face=True):
+
+def draw_poses(
+    poses: List[PoseResult], H, W, draw_body=True, draw_hand=True, draw_face=True
+):
     """
     Draw the detected poses on an empty canvas.
 
@@ -51,8 +59,10 @@ def draw_poses(poses: List[PoseResult], H, W, draw_body=True, draw_hand=True, dr
     return canvas
 
 
-def decode_json_as_poses(json_string: str, normalize_coords: bool = False) -> Tuple[List[PoseResult], int, int]:
-    """ Decode the json_string complying with the openpose JSON output format
+def decode_json_as_poses(
+    json_string: str, normalize_coords: bool = False
+) -> Tuple[List[PoseResult], int, int]:
+    """Decode the json_string complying with the openpose JSON output format
     to poses that controlnet recognizes.
     https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/02_output.md
 
@@ -61,25 +71,27 @@ def decode_json_as_poses(json_string: str, normalize_coords: bool = False) -> Tu
         normalize_coords: Whether to normalize coordinates of each keypoint by canvas height/width.
                           `draw_pose` only accepts normalized keypoints. Set this param to True if
                           the input coords are not normalized.
-    
+
     Returns:
         poses
         canvas_height
-        canvas_width                      
+        canvas_width
     """
     pose_json = json.loads(json_string)
-    height = pose_json['canvas_height']
-    width = pose_json['canvas_width']
+    height = pose_json["canvas_height"]
+    width = pose_json["canvas_width"]
 
     def chunks(lst, n):
         """Yield successive n-sized chunks from lst."""
         for i in range(0, len(lst), n):
-            yield lst[i:i + n]
-    
-    def decompress_keypoints(numbers: Optional[List[float]]) -> Optional[List[Optional[Keypoint]]]:
+            yield lst[i : i + n]
+
+    def decompress_keypoints(
+        numbers: Optional[List[float]],
+    ) -> Optional[List[Optional[Keypoint]]]:
         if not numbers:
             return None
-        
+
         assert len(numbers) % 3 == 0
 
         def create_keypoint(x, y, c):
@@ -88,34 +100,38 @@ def decode_json_as_poses(json_string: str, normalize_coords: bool = False) -> Tu
             keypoint = Keypoint(x, y)
             return keypoint
 
-        return [
-            create_keypoint(x, y, c)
-            for x, y, c in chunks(numbers, n=3)
-        ]
-    
+        return [create_keypoint(x, y, c) for x, y, c in chunks(numbers, n=3)]
+
     return (
         [
             PoseResult(
-                body=BodyResult(keypoints=decompress_keypoints(pose.get('pose_keypoints_2d'))),
-                left_hand=decompress_keypoints(pose.get('hand_left_keypoints_2d')),
-                right_hand=decompress_keypoints(pose.get('hand_right_keypoints_2d')),
-                face=decompress_keypoints(pose.get('face_keypoints_2d'))
+                body=BodyResult(
+                    keypoints=decompress_keypoints(pose.get("pose_keypoints_2d"))
+                ),
+                left_hand=decompress_keypoints(pose.get("hand_left_keypoints_2d")),
+                right_hand=decompress_keypoints(pose.get("hand_right_keypoints_2d")),
+                face=decompress_keypoints(pose.get("face_keypoints_2d")),
             )
-            for pose in pose_json['people']
+            for pose in pose_json["people"]
         ],
         height,
         width,
     )
 
 
-def encode_poses_as_dict(poses: List[PoseResult], canvas_height: int, canvas_width: int) -> str:
-    """ Encode the pose as a dict following openpose JSON output format:
+def encode_poses_as_dict(
+    poses: List[PoseResult], canvas_height: int, canvas_width: int
+) -> str:
+    """Encode the pose as a dict following openpose JSON output format:
     https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/02_output.md
     """
-    def compress_keypoints(keypoints: Union[List[Keypoint], None]) -> Union[List[float], None]:
+
+    def compress_keypoints(
+        keypoints: Union[List[Keypoint], None],
+    ) -> Union[List[float], None]:
         if not keypoints:
             return None
-        
+
         return [
             value
             for keypoint in keypoints
@@ -127,20 +143,22 @@ def encode_poses_as_dict(poses: List[PoseResult], canvas_height: int, canvas_wid
         ]
 
     return {
-        'people': [
+        "people": [
             {
-                'pose_keypoints_2d': compress_keypoints(pose.body.keypoints),
+                "pose_keypoints_2d": compress_keypoints(pose.body.keypoints),
                 "face_keypoints_2d": compress_keypoints(pose.face),
                 "hand_left_keypoints_2d": compress_keypoints(pose.left_hand),
-                "hand_right_keypoints_2d":compress_keypoints(pose.right_hand),
+                "hand_right_keypoints_2d": compress_keypoints(pose.right_hand),
             }
             for pose in poses
         ],
-        'canvas_height': canvas_height,
-        'canvas_width': canvas_width,
+        "canvas_height": canvas_height,
+        "canvas_width": canvas_width,
     }
 
+
 global_cached_dwpose = Wholebody()
+
 
 class DWPoseDetector:
     """
@@ -149,26 +167,44 @@ class DWPoseDetector:
     Attributes:
         model_dir (str): Path to the directory where the pose models are stored.
     """
+
     def __init__(self, dw_pose_estimation):
         self.dw_pose_estimation = dw_pose_estimation
-    
+
     @classmethod
-    def from_pretrained(cls, pretrained_model_or_path, pretrained_det_model_or_path=None, det_filename=None, pose_filename=None, torchscript_device="cuda"):
+    def from_pretrained(
+        cls,
+        pretrained_model_or_path,
+        pretrained_det_model_or_path=None,
+        det_filename=None,
+        pose_filename=None,
+        torchscript_device="cuda",
+    ):
         global global_cached_dwpose
-        pretrained_det_model_or_path = pretrained_det_model_or_path or pretrained_model_or_path
+        pretrained_det_model_or_path = (
+            pretrained_det_model_or_path or pretrained_model_or_path
+        )
         det_filename = det_filename or "yolox_l.onnx"
         pose_filename = pose_filename or "dw-ll_ucoco_384.onnx"
         det_model_path = custom_hf_download(pretrained_det_model_or_path, det_filename)
         pose_model_path = custom_hf_download(pretrained_model_or_path, pose_filename)
-        
-        print(f"\nDWPose: Using {det_filename} for bbox detection and {pose_filename} for pose estimation")
-        if global_cached_dwpose.det is None or global_cached_dwpose.det_filename != det_filename:
+
+        print(
+            f"\nDWPose: Using {det_filename} for bbox detection and {pose_filename} for pose estimation"
+        )
+        if (
+            global_cached_dwpose.det is None
+            or global_cached_dwpose.det_filename != det_filename
+        ):
             t = Wholebody(det_model_path, None, torchscript_device=torchscript_device)
             t.pose = global_cached_dwpose.pose
             t.pose_filename = global_cached_dwpose.pose
             global_cached_dwpose = t
-        
-        if global_cached_dwpose.pose is None or global_cached_dwpose.pose_filename != pose_filename:
+
+        if (
+            global_cached_dwpose.pose is None
+            or global_cached_dwpose.pose_filename != pose_filename
+        ):
             t = Wholebody(None, pose_model_path, torchscript_device=torchscript_device)
             t.det = global_cached_dwpose.det
             t.det_filename = global_cached_dwpose.det_filename
@@ -179,24 +215,53 @@ class DWPoseDetector:
         with torch.no_grad():
             keypoints_info = self.dw_pose_estimation(oriImg.copy())
             return Wholebody.format_result(keypoints_info)
-    
-    def __call__(self, input_image, detect_resolution=512, include_body=True, include_hand=False, include_face=False, hand_and_face=None, output_type="pil", image_and_json=False, upscale_method="INTER_CUBIC", **kwargs):
+
+    def __call__(
+        self,
+        input_image,
+        detect_resolution=512,
+        include_body=True,
+        include_hand=False,
+        include_face=False,
+        hand_and_face=None,
+        output_type="pil",
+        image_and_json=False,
+        upscale_method="INTER_CUBIC",
+        **kwargs,
+    ):
         if hand_and_face is not None:
-            warnings.warn("hand_and_face is deprecated. Use include_hand and include_face instead.", DeprecationWarning)
+            warnings.warn(
+                "hand_and_face is deprecated. Use include_hand and include_face instead.",
+                DeprecationWarning,
+            )
             include_hand = hand_and_face
             include_face = hand_and_face
 
-        input_image, output_type = common_input_validate(input_image, output_type, **kwargs)
-        input_image, remove_pad = resize_image_with_pad(input_image, detect_resolution, upscale_method)
-        
+        input_image, output_type = common_input_validate(
+            input_image, output_type, **kwargs
+        )
+        input_image, remove_pad = resize_image_with_pad(
+            input_image, detect_resolution, upscale_method
+        )
+
         poses = self.detect_poses(input_image)
-        canvas = draw_poses(poses, input_image.shape[0], input_image.shape[1], draw_body=include_body, draw_hand=include_hand, draw_face=include_face) 
+        canvas = draw_poses(
+            poses,
+            input_image.shape[0],
+            input_image.shape[1],
+            draw_body=include_body,
+            draw_hand=include_hand,
+            draw_face=include_face,
+        )
         detected_map = HWC3(remove_pad(canvas))
 
         if output_type == "pil":
             detected_map = Image.fromarray(detected_map)
-        
+
         if image_and_json:
-            return (detected_map, encode_poses_as_dict(poses, input_image.shape[0], input_image.shape[1]))
-        
+            return (
+                detected_map,
+                encode_poses_as_dict(poses, input_image.shape[0], input_image.shape[1]),
+            )
+
         return detected_map

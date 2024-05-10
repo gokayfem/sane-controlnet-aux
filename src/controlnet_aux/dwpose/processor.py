@@ -5,9 +5,13 @@ import numpy as np
 import torch
 
 
-
 class DWPoseProcessor:
-    def __init__(self, bbox_detector="yolox_l.onnx", pose_estimator="dw-ll_ucoco_384_bs5.torchscript.pt", device: Optional[str] =None):
+    def __init__(
+        self,
+        bbox_detector="yolox_l.onnx",
+        pose_estimator="dw-ll_ucoco_384_bs5.torchscript.pt",
+        device: Optional[str] = None,
+    ):
         device = device or ("cuda" if torch.cuda.is_available() else "cpu")
 
         if bbox_detector == "yolox_l.onnx":
@@ -31,14 +35,21 @@ class DWPoseProcessor:
         model = DWPoseDetector.from_pretrained(
             pose_repo,
             yolo_repo,
-            det_filename=bbox_detector, pose_filename=pose_estimator,
+            det_filename=bbox_detector,
+            pose_filename=pose_estimator,
             torchscript_device=device,
         )
 
         self.model = model
 
-
-    def __call__(self, image: np.ndarray, detect_body: bool = True, detect_hand: bool = False, detect_face: bool = False, resolution: int=512) -> np.ndarray:
+    def __call__(
+        self,
+        image: np.ndarray,
+        detect_body: bool = True,
+        detect_hand: bool = False,
+        detect_face: bool = False,
+        resolution: int = 512,
+    ) -> np.ndarray:
         """
         Args:
             image: Image to process. Can be a single image or a batch of images.
@@ -55,7 +66,7 @@ class DWPoseProcessor:
             np.ndarray: Processed image with keypoints drawn.
             Shape is (B, H, W, C).
         """
-    
+
         import numpy as np
 
         if len(image.shape) == 3:
@@ -69,10 +80,20 @@ class DWPoseProcessor:
         pose_images = None
 
         for i, image in enumerate(image):
-            pose_image, openpose_dict = self.model(image, output_type="np", detect_resolution=resolution, include_hand=detect_hand, include_face=detect_face, include_body=detect_body, image_and_json=True)
+            pose_image, openpose_dict = self.model(
+                image,
+                output_type="np",
+                detect_resolution=resolution,
+                include_hand=detect_hand,
+                include_face=detect_face,
+                include_body=detect_body,
+                image_and_json=True,
+            )
 
             if pose_images is None:
-                pose_images = np.zeros((batch_size, *pose_image.shape), dtype=pose_image.dtype)
+                pose_images = np.zeros(
+                    (batch_size, *pose_image.shape), dtype=pose_image.dtype
+                )
             pose_images[i] = pose_image
 
         return pose_images, openpose_dict

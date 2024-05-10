@@ -42,3 +42,12 @@ dependencies = [
 
 [project.urls]
 repository = "https://github.com/badayvedat/sane-controlnet-aux"
+
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
