@@ -24,7 +24,13 @@ DEPTH_ANYTHING_MODEL_NAME = "LiheYoung/Depth-Anything"  # HF Space
 DIFFUSION_EDGE_MODEL_NAME = "hr16/Diffusion-Edge"
 
 temp_dir = tempfile.gettempdir()
-annotator_ckpts_path = os.path.join(Path(__file__).parents[2], "ckpts")
+
+HOME_DIR = os.environ.get(
+    "CONTROLNET_AUX_HOME", os.path.expanduser("~/.controlnet_aux")
+)
+
+annotator_ckpts_path = os.path.join(HOME_DIR, "ckpts")
+
 USE_SYMLINKS = False
 
 try:
@@ -34,8 +40,9 @@ except Exception:
     pass
 
 try:
-    USE_SYMLINKS = eval(os.environ["AUX_USE_SYMLINKS"])
-except Exception:
+    USE_SYMLINKS = os.environ["AUX_USE_SYMLINKS"] == "1"
+except Exception as e:
+    print(e)
     warnings.warn(
         "USE_SYMLINKS not set successfully. Using default value: False to download models."
     )
