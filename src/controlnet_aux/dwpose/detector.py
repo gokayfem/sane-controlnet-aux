@@ -13,17 +13,14 @@ import numpy as np
 from . import util
 from .body import BodyResult, Keypoint
 from .types import PoseResult
-from .wholebody import Wholebody
-import warnings
 from controlnet_aux.utils import (
     HWC3,
     resize_image_with_pad,
-    common_input_validate,
     custom_hf_download,
 )
 from PIL import Image
 
-from typing import Tuple, List, Union, Optional
+from typing import Literal, Tuple, List, Union, Optional
 
 
 def draw_poses(
@@ -157,111 +154,105 @@ def encode_poses_as_dict(
     }
 
 
-global_cached_dwpose = Wholebody()
-
-
 class DWPoseDetector:
-    """
-    A class for detecting human poses in images using the Dwpose model.
+    """A class for detecting human poses in images using the Dwpose model."""
 
-    Attributes:
-        model_dir (str): Path to the directory where the pose models are stored.
-    """
+    def __init__(self, det_model_path=None, pose_model_path=None, device="cpu"):
+        from .wholebody import Wholebody
 
-    def __init__(self, dw_pose_estimation):
-        self.dw_pose_estimation = dw_pose_estimation
+        self.pose_estimation = Wholebody(det_model_path, pose_model_path, device)
 
     @classmethod
     def from_pretrained(
         cls,
-        pretrained_model_or_path,
-        pretrained_det_model_or_path=None,
-        det_filename=None,
-        pose_filename=None,
-        torchscript_device="cuda",
+        pretrained_model_or_path="yzd-v/DWPose",
+        pretrained_det_model_or_path="yzd-v/DWPose",
+        det_filename="yolox_l.onnx",
+        pose_filename="dw-ll_ucoco_384.onnx",
+        device="cuda",
     ):
-        global global_cached_dwpose
         pretrained_det_model_or_path = (
             pretrained_det_model_or_path or pretrained_model_or_path
         )
         det_filename = det_filename or "yolox_l.onnx"
         pose_filename = pose_filename or "dw-ll_ucoco_384.onnx"
+
         det_model_path = custom_hf_download(pretrained_det_model_or_path, det_filename)
         pose_model_path = custom_hf_download(pretrained_model_or_path, pose_filename)
 
-        print(
-            f"\nDWPose: Using {det_filename} for bbox detection and {pose_filename} for pose estimation"
-        )
-        if (
-            global_cached_dwpose.det is None
-            or global_cached_dwpose.det_filename != det_filename
-        ):
-            t = Wholebody(det_model_path, None, torchscript_device=torchscript_device)
-            t.pose = global_cached_dwpose.pose
-            t.pose_filename = global_cached_dwpose.pose
-            global_cached_dwpose = t
-
-        if (
-            global_cached_dwpose.pose is None
-            or global_cached_dwpose.pose_filename != pose_filename
-        ):
-            t = Wholebody(None, pose_model_path, torchscript_device=torchscript_device)
-            t.det = global_cached_dwpose.det
-            t.det_filename = global_cached_dwpose.det_filename
-            global_cached_dwpose = t
-        return cls(global_cached_dwpose)
+        return cls(det_model_path, pose_model_path, device=device)
 
     def detect_poses(self, oriImg) -> List[PoseResult]:
+        from .wholebody import Wholebody
+
         with torch.no_grad():
-            keypoints_info = self.dw_pose_estimation(oriImg.copy())
+            keypoints_info = self.pose_estimation(oriImg.copy())
             return Wholebody.format_result(keypoints_info)
+
+    def validate_input(self, input_image, output_type):
+        if not isinstance(input_image, (Image.Image, np.ndarray)):
+            raise ValueError(
+                f"Input image must be a PIL Image or a numpy array. "
+                f"Got {type(input_image)} instead."
+            )
+
+        if not isinstance(input_image, np.ndarray):
+            input_image = np.array(input_image, dtype=np.uint8)
+            output_type = output_type or "pil"
+        else:
+            output_type = output_type or "np"
+
+        return (input_image, output_type)
 
     def __call__(
         self,
-        input_image,
-        detect_resolution=512,
-        include_body=True,
-        include_hand=False,
-        include_face=False,
-        hand_and_face=None,
-        output_type="pil",
-        image_and_json=False,
+        image: Union[Image.Image, np.ndarray],
+        detect_resolution: int = 512,
+        detect_body: bool = True,
+        detect_hand: bool = False,
+        detect_face: bool = False,
+        output_type: Literal["pil", "np"] = "pil",
         upscale_method="INTER_CUBIC",
+        return_pose_dict: bool = False,
         **kwargs,
     ):
-        if hand_and_face is not None:
-            warnings.warn(
-                "hand_and_face is deprecated. Use include_hand and include_face instead.",
-                DeprecationWarning,
-            )
-            include_hand = hand_and_face
-            include_face = hand_and_face
-
-        input_image, output_type = common_input_validate(
-            input_image, output_type, **kwargs
+        """
+        Args:
+            image: Image to process.
+            detect_resolution: Resolution to use for detection. Defaults to 512.
+            detect_body: Whether to predict body keypoints. Defaults to True.
+            detect_hand: Whether to predict hand keypoints. Defaults to False.
+            detect_face: Whether to predict face keypoints. Defaults to False.
+            output_type: Type of the output. Defaults to "pil".
+            upscale_method: The interpolation method to use for upscaling the image.
+            return_pose_dict: Whether to return the pose dictionary in addition to the image.
+            Defaults to False.
+        """
+        image, output_type = self.validate_input(image, output_type, **kwargs)
+        image, remove_pad = resize_image_with_pad(
+            image, detect_resolution, upscale_method
         )
-        input_image, remove_pad = resize_image_with_pad(
-            input_image, detect_resolution, upscale_method
-        )
+        input_height, input_width = image.shape[:2]
 
-        poses = self.detect_poses(input_image)
+        poses = self.detect_poses(image)
         canvas = draw_poses(
             poses,
-            input_image.shape[0],
-            input_image.shape[1],
-            draw_body=include_body,
-            draw_hand=include_hand,
-            draw_face=include_face,
+            input_height,
+            input_width,
+            draw_body=detect_body,
+            draw_face=detect_face,
+            draw_hand=detect_hand,
         )
-        detected_map = HWC3(remove_pad(canvas))
+
+        pose_image = HWC3(remove_pad(canvas))
 
         if output_type == "pil":
-            detected_map = Image.fromarray(detected_map)
+            pose_image = Image.fromarray(pose_image)
 
-        if image_and_json:
+        if return_pose_dict:
             return (
-                detected_map,
-                encode_poses_as_dict(poses, input_image.shape[0], input_image.shape[1]),
+                pose_image,
+                encode_poses_as_dict(poses, input_height, input_width),
             )
 
-        return detected_map
+        return pose_image

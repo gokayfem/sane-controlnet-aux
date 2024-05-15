@@ -194,39 +194,6 @@ def resize_image_with_pad(
     return safer_memory(img_padded), remove_pad
 
 
-def common_input_validate(input_image, output_type, **kwargs):
-    if "img" in kwargs:
-        warnings.warn(
-            "img is deprecated, please use `input_image=...` instead.",
-            DeprecationWarning,
-        )
-        input_image = kwargs.pop("img")
-
-    if "return_pil" in kwargs:
-        warnings.warn(
-            "return_pil is deprecated. Use output_type instead.", DeprecationWarning
-        )
-        output_type = "pil" if kwargs["return_pil"] else "np"
-
-    if isinstance(output_type, bool):
-        warnings.warn(
-            "Passing `True` or `False` to `output_type` is deprecated and will raise an error in future versions"
-        )
-        if output_type:
-            output_type = "pil"
-
-    if input_image is None:
-        raise ValueError("input_image must be defined.")
-
-    if not isinstance(input_image, np.ndarray):
-        input_image = np.array(input_image, dtype=np.uint8)
-        output_type = output_type or "pil"
-    else:
-        output_type = output_type or "np"
-
-    return (input_image, output_type)
-
-
 def torch_gc():
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
@@ -529,7 +496,7 @@ def custom_hf_download(
     return model_path
 
 
-def load_image(image_path: str) -> np.ndarray:
+def load_image(image_path: str) -> Image.Image:
     """Load an image from a file path.
 
     Notes:

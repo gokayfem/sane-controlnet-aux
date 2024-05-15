@@ -2,6 +2,6 @@ import os
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
-from .dwpose import DWPoseProcessor  # noqa: E402
+from .dwpose import DWPoseDetector  # noqa
 
-__all__ = ["DWPoseProcessor"]
+__all__ = ["DWPoseDetector"]
