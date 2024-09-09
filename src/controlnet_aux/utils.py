@@ -33,29 +33,17 @@ annotator_ckpts_path = os.path.join(HOME_DIR, "ckpts")
 
 USE_SYMLINKS = False
 
-try:
-    annotator_ckpts_path = os.environ["AUX_ANNOTATOR_CKPTS_PATH"]
-except Exception:
-    warnings.warn("Custom pressesor model path not set successfully.")
-    pass
+annotator_ckpts_path = os.environ.get("AUX_ANNOTATOR_CKPTS_PATH", annotator_ckpts_path)
 
-try:
-    USE_SYMLINKS = os.environ["AUX_USE_SYMLINKS"] == "1"
-except Exception as e:
-    print(e)
-    warnings.warn(
-        "USE_SYMLINKS not set successfully. Using default value: False to download models."
-    )
-    pass
+USE_SYMLINKS = os.environ.get("AUX_USE_SYMLINKS") == "1"
 
-try:
-    temp_dir = os.environ["AUX_TEMP_DIR"]
-    if len(temp_dir) >= 60:
+# TODO: where is this actually being used
+env_temp_dir = os.environ.get("AUX_TEMP_DIR")
+if env_temp_dir:
+    if len(env_temp_dir) >= 60:
         warnings.warn("custom temp dir is too long. Using default")
-        temp_dir = tempfile.gettempdir()
-except Exception:
-    warnings.warn("custom temp dir not set successfully")
-    pass
+    else:
+        temp_dir = env_temp_dir
 
 here = Path(__file__).parent.resolve()
 
@@ -403,7 +391,6 @@ def custom_torch_download(filename, ckpts_dir=annotator_ckpts_path):
                 ), f"Hash check failed as file {filename} is corrupted"
                 print("Hash check passed")
 
-    print(f"model_path is {model_path}")
     return model_path
 
 
@@ -490,8 +477,6 @@ def custom_hf_download(
                 shutil.rmtree(os.path.join(cache_dir, "ckpts"))
             except Exception as e:
                 print(e)
-
-    print(f"model_path is {model_path}")
 
     return model_path
 
