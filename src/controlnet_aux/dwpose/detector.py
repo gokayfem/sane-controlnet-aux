@@ -214,7 +214,6 @@ class DWPoseDetector:
         output_type: Literal["pil", "np"] = "pil",
         upscale_method="INTER_CUBIC",
         return_pose_dict: bool = False,
-        **kwargs,
     ):
         """
         Args:
@@ -228,7 +227,7 @@ class DWPoseDetector:
             return_pose_dict: Whether to return the pose dictionary in addition to the image.
             Defaults to False.
         """
-        image, output_type = self.validate_input(image, output_type, **kwargs)
+        image, output_type = self.validate_input(image, output_type)
         image, remove_pad = resize_image_with_pad(
             image, detect_resolution, upscale_method
         )
