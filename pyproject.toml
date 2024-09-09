@@ -15,29 +15,22 @@ authors = [{ name = "Vedat Baday <badayvedat@gmail.com>" }]
 requires-python = ">=3.8"
 dependencies = [
     "torch",
-    "importlib_metadata",
     "huggingface_hub",
     "scipy",
     "opencv-python-headless>=4.7.0.72",
-    "filelock",
     "numpy",
     "Pillow",
-    "einops",
     "torchvision",
-    "pyyaml",
     "scikit-image",
-    "python-dateutil",
-    "mediapipe",
-    "svglib",
-    "fvcore",
-    "yapf",
-    "omegaconf",
-    "ftfy",
-    "addict",
-    "yacs",
-    "trimesh[easy]",
-    "albumentations",
-    "scikit-learn",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest<8",
+    "pytest-xdist",
+]
+dev = [
+    "sane-controlnet-aux[test]",
 ]
 
 [project.urls]
