@@ -17,4 +17,5 @@ __all__ = [
     "HEDDetector",
     "MLSDDetector",
     "ScribbleDetector",
+    "PiDiDetector",
 ]
