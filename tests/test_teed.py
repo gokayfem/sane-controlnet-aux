@@ -19,7 +19,6 @@ def test_output_type(detector, image, output_type: str):
 
     if output_type == "pil":
         assert isinstance(output, Image.Image)
-        output.save("teed.jpg")
     elif output_type == "np":
         assert isinstance(output, np.ndarray)
     else:
