@@ -8,6 +8,7 @@ from .lineart import LineartDetector  # noqa
 from .hed import HEDDetector  # noqa
 from .mlsd import MLSDDetector  # noqa
 from .scribble import ScribbleDetector  # noqa
+from .pidi import PiDiDetector  # noqa
 
 __all__ = [
     "DWPoseDetector",
