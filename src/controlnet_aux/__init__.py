@@ -9,6 +9,7 @@ from .hed import HEDDetector  # noqa
 from .mlsd import MLSDDetector  # noqa
 from .scribble import ScribbleDetector  # noqa
 from .pidi import PiDiDetector  # noqa
+from .teed import TEEDDetector  # noqa
 
 __all__ = [
     "DWPoseDetector",
@@ -18,4 +19,5 @@ __all__ = [
     "MLSDDetector",
     "ScribbleDetector",
     "PiDiDetector",
+    "TEEDDetector",
 ]
