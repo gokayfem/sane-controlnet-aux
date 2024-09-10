@@ -51,16 +51,16 @@ class HEDDetector(BaseDetector):
         upscale_method="INTER_CUBIC",
     ):
         image, output_type = self.validate_input(image, output_type)
-        input_image, remove_pad = resize_image_with_pad(
+        image, remove_pad = resize_image_with_pad(
             image, detect_resolution, upscale_method
         )
 
-        assert input_image.ndim == 3
+        assert image.ndim == 3
 
-        H, W, C = input_image.shape
+        H, W, C = image.shape
 
         with torch.no_grad():
-            image_hed = torch.from_numpy(input_image).float().to(self.device)
+            image_hed = torch.from_numpy(image).float().to(self.device)
             image_hed = rearrange(image_hed, "h w c -> 1 c h w")
             edges = self.model(image_hed)
             edges = [e.detach().cpu().numpy().astype(np.float32)[0, 0] for e in edges]

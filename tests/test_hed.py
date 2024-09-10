@@ -1,5 +1,4 @@
 from controlnet_aux import HEDDetector
-from controlnet_aux.utils import load_image
 from PIL import Image
 import numpy as np
 
@@ -9,11 +8,6 @@ import pytest
 @pytest.fixture()
 def detector():
     return HEDDetector.from_pretrained()
-
-
-@pytest.fixture()
-def image():
-    return load_image("tests/data/pose_sample.jpg")
 
 
 @pytest.mark.parametrize("output_type", ["pil", "np"])

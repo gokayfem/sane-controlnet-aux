@@ -7,6 +7,7 @@ from .canny import CannyDetector  # noqa
 from .lineart import LineartDetector  # noqa
 from .hed import HEDDetector  # noqa
 from .mlsd import MLSDDetector  # noqa
+from .scribble import ScribbleDetector  # noqa
 
 __all__ = [
     "DWPoseDetector",
@@ -14,4 +15,5 @@ __all__ = [
     "LineartDetector",
     "HEDDetector",
     "MLSDDetector",
+    "ScribbleDetector",
 ]

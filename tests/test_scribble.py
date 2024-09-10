@@ -1,4 +1,4 @@
-from controlnet_aux import MLSDDetector
+from controlnet_aux import ScribbleDetector
 from PIL import Image
 import numpy as np
 
@@ -7,7 +7,7 @@ import pytest
 
 @pytest.fixture()
 def detector():
-    return MLSDDetector.from_pretrained()
+    return ScribbleDetector.from_pretrained()
 
 
 @pytest.mark.parametrize("output_type", ["pil", "np"])

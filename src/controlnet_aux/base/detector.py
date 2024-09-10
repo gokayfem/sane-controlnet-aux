@@ -5,22 +5,20 @@ import numpy as np
 
 
 class BaseDetector:
-    def validate_input(
-        self, input_image: Union[Image.Image, np.ndarray], output_type: str
-    ):
-        if not isinstance(input_image, (Image.Image, np.ndarray)):
+    def validate_input(self, image: Union[Image.Image, np.ndarray], output_type: str):
+        if not isinstance(image, (Image.Image, np.ndarray)):
             raise ValueError(
                 f"Input image must be a PIL Image or a numpy array. "
-                f"Got {type(input_image)} instead."
+                f"Got {type(image)} instead."
             )
 
-        if not isinstance(input_image, np.ndarray):
-            input_image = np.array(input_image, dtype=np.uint8)
+        if not isinstance(image, np.ndarray):
+            image = np.array(image, dtype=np.uint8)
             output_type = output_type or "pil"
         else:
             output_type = output_type or "np"
 
-        return (input_image, output_type)
+        return (image, output_type)
 
     @classmethod
     def from_pretrained(cls):

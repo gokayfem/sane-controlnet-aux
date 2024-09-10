@@ -1,5 +1,4 @@
 from controlnet_aux import DWPoseDetector
-from controlnet_aux.utils import load_image
 
 import pytest
 
@@ -7,11 +6,6 @@ import pytest
 @pytest.fixture()
 def detector():
     return DWPoseDetector.from_pretrained()
-
-
-@pytest.fixture()
-def image():
-    return load_image("tests/data/pose_sample.jpg")
 
 
 def test_output_type_pil(detector, image):
