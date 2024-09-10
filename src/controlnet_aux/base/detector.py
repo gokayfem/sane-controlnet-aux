@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Literal, Union
 from PIL import Image
 
 import numpy as np
@@ -26,5 +26,9 @@ class BaseDetector:
     def from_pretrained(cls):
         raise NotImplementedError()
 
-    def __call__(self):
+    def __call__(
+        self,
+        image: Union[Image.Image, np.ndarray],
+        output_type: Literal["pil", "np"] = "pil",
+    ):
         raise NotImplementedError()

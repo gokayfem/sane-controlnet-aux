@@ -1,3 +1,4 @@
+from typing import Literal, Union
 import cv2
 import numpy as np
 import torch
@@ -40,15 +41,14 @@ class MLSDDetector(BaseDetector):
 
     def __call__(
         self,
-        image,
-        thr_v=0.1,
-        thr_d=0.1,
-        detect_resolution=512,
-        output_type="pil",
+        image: Union[Image.Image, np.ndarray],
+        score_threshold: float = 0.1,
+        distance_threshold: float = 0.1,
+        detect_resolution: int = 512,
+        output_type: Literal["pil", "np"] = "pil",
         upscale_method="INTER_AREA",
-        **kwargs,
     ):
-        image, output_type = self.validate_input(image, output_type, **kwargs)
+        image, output_type = self.validate_input(image, output_type)
         detected_map, remove_pad = resize_image_with_pad(
             image, detect_resolution, upscale_method
         )
@@ -57,7 +57,11 @@ class MLSDDetector(BaseDetector):
         try:
             with torch.no_grad():
                 lines = pred_lines(
-                    img, self.model, [img.shape[0], img.shape[1]], thr_v, thr_d
+                    img,
+                    self.model,
+                    [img.shape[0], img.shape[1]],
+                    score_threshold,
+                    distance_threshold,
                 )
                 for line in lines:
                     x_start, y_start, x_end, y_end = [int(val) for val in line]
@@ -69,6 +73,7 @@ class MLSDDetector(BaseDetector):
                         1,
                     )
         except Exception:
+            # TODO: find a test case
             pass
 
         detected_map = remove_pad(HWC3(img_output[:, :, 0]))
