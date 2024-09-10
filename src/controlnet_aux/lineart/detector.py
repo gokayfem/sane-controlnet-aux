@@ -1,6 +1,7 @@
-from typing import Literal, Union
+from typing import Literal
 import torch
 
+from controlnet_aux.base.detector import BaseDetector
 from controlnet_aux.lineart.generator import Generator
 from controlnet_aux.utils import HWC3, custom_hf_download, resize_image_with_pad
 from PIL import Image
@@ -8,7 +9,7 @@ import numpy as np
 from einops import rearrange
 
 
-class LineartDetector:
+class LineartDetector(BaseDetector):
     def __init__(self, model: Generator, coarse_model: Generator):
         self.model = model
         self.model_coarse = coarse_model
@@ -47,23 +48,6 @@ class LineartDetector:
         self.model_coarse.to(device)
         self.device = device
         return self
-
-    def validate_input(
-        self, input_image: Union[Image.Image, np.ndarray], output_type: str
-    ):
-        if not isinstance(input_image, (Image.Image, np.ndarray)):
-            raise ValueError(
-                f"Input image must be a PIL Image or a numpy array. "
-                f"Got {type(input_image)} instead."
-            )
-
-        if not isinstance(input_image, np.ndarray):
-            input_image = np.array(input_image, dtype=np.uint8)
-            output_type = output_type or "pil"
-        else:
-            output_type = output_type or "np"
-
-        return (input_image, output_type)
 
     def __call__(
         self,

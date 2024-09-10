@@ -4,6 +4,7 @@ from einops import rearrange
 import numpy as np
 from PIL import Image
 import torch
+from controlnet_aux.base.detector import BaseDetector
 from controlnet_aux.hed.model import HED
 from controlnet_aux.utils import (
     custom_hf_download,
@@ -14,7 +15,7 @@ from controlnet_aux.utils import (
 )
 
 
-class HEDDetector:
+class HEDDetector(BaseDetector):
     def __init__(self, model: HED):
         self.model = model
         self.device = "cpu"
@@ -39,23 +40,6 @@ class HEDDetector:
         self.model.to(device)
         self.device = device
         return self
-
-    def validate_input(
-        self, input_image: Union[Image.Image, np.ndarray], output_type: str
-    ):
-        if not isinstance(input_image, (Image.Image, np.ndarray)):
-            raise ValueError(
-                f"Input image must be a PIL Image or a numpy array. "
-                f"Got {type(input_image)} instead."
-            )
-
-        if not isinstance(input_image, np.ndarray):
-            input_image = np.array(input_image, dtype=np.uint8)
-            output_type = output_type or "pil"
-        else:
-            output_type = output_type or "np"
-
-        return (input_image, output_type)
 
     def __call__(
         self,

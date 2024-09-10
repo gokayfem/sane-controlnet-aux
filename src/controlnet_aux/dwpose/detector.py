@@ -10,6 +10,8 @@
 import json
 import torch
 import numpy as np
+
+from controlnet_aux.base.detector import BaseDetector
 from . import util
 from .body import BodyResult, Keypoint
 from .types import PoseResult
@@ -154,7 +156,7 @@ def encode_poses_as_dict(
     }
 
 
-class DWPoseDetector:
+class DWPoseDetector(BaseDetector):
     """A class for detecting human poses in images using the Dwpose model."""
 
     def __init__(self, det_model_path=None, pose_model_path=None, device="cpu"):
@@ -188,21 +190,6 @@ class DWPoseDetector:
         with torch.no_grad():
             keypoints_info = self.pose_estimation(oriImg.copy())
             return Wholebody.format_result(keypoints_info)
-
-    def validate_input(self, input_image, output_type):
-        if not isinstance(input_image, (Image.Image, np.ndarray)):
-            raise ValueError(
-                f"Input image must be a PIL Image or a numpy array. "
-                f"Got {type(input_image)} instead."
-            )
-
-        if not isinstance(input_image, np.ndarray):
-            input_image = np.array(input_image, dtype=np.uint8)
-            output_type = output_type or "pil"
-        else:
-            output_type = output_type or "np"
-
-        return (input_image, output_type)
 
     def __call__(
         self,

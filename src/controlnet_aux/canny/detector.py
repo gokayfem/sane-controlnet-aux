@@ -2,27 +2,11 @@ from typing import Literal, Union
 import cv2
 import numpy as np
 from PIL import Image
+from controlnet_aux.base.detector import BaseDetector
 from controlnet_aux.utils import resize_image_with_pad, HWC3
 
 
-class CannyDetector:
-    def validate_input(
-        self, input_image: Union[Image.Image, np.ndarray], output_type: str
-    ):
-        if not isinstance(input_image, (Image.Image, np.ndarray)):
-            raise ValueError(
-                f"Input image must be a PIL Image or a numpy array. "
-                f"Got {type(input_image)} instead."
-            )
-
-        if not isinstance(input_image, np.ndarray):
-            input_image = np.array(input_image, dtype=np.uint8)
-            output_type = output_type or "pil"
-        else:
-            output_type = output_type or "np"
-
-        return (input_image, output_type)
-
+class CannyDetector(BaseDetector):
     def __call__(
         self,
         image: Union[Image.Image, np.ndarray],
