@@ -4,6 +4,8 @@ import numpy as np
 
 import pytest
 
+from tests.conftest import validate_image_type
+
 
 @pytest.fixture()
 def detector():
@@ -18,9 +20,4 @@ def test_output_type(
 ):
     output = detector(image, output_type=output_type)
 
-    if output_type == "pil":
-        assert isinstance(output, Image.Image)
-    elif output_type == "np":
-        assert isinstance(output, np.ndarray)
-    else:
-        assert False, f"Unknown output type: {output_type}"
+    validate_image_type(output, output_type)
