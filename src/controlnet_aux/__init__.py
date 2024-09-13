@@ -11,6 +11,7 @@ from .scribble import ScribbleDetector  # noqa
 from .pidi import PiDiDetector  # noqa
 from .teed import TEEDDetector  # noqa
 from .midas import MidasDetector  # noqa
+from .sam import SamDetector  # noqa
 
 __all__ = [
     "DWPoseDetector",
@@ -22,4 +23,5 @@ __all__ = [
     "PiDiDetector",
     "TEEDDetector",
     "MidasDetector",
+    "SamDetector",
 ]
