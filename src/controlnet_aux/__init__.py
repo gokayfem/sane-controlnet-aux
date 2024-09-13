@@ -13,6 +13,7 @@ from .teed import TEEDDetector  # noqa
 from .midas import MidasDetector  # noqa
 from .sam import SamDetector  # noqa
 from .zoe import ZoeDetector  # noqa
+from .depth_anything import DepthAnythingV2Detector  # noqa
 
 __all__ = [
     "DWPoseDetector",
@@ -26,4 +27,5 @@ __all__ = [
     "MidasDetector",
     "SamDetector",
     "ZoeDetector",
+    "DepthAnythingV2Detector",
 ]

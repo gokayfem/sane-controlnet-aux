@@ -23,6 +23,7 @@ dependencies = [
     "torchvision",
     "scikit-image",
     "timm==0.6.13",
+    "depth-anything-v2@git+https://github.com/badayvedat/Depth-Anything-V2@badayvedat-patch-1",
 ]
 
 [project.optional-dependencies]
