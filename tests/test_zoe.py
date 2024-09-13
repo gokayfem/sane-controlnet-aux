@@ -1,4 +1,4 @@
-from controlnet_aux import SamDetector
+from controlnet_aux import ZoeDetector
 
 import pytest
 
@@ -7,7 +7,7 @@ from tests.conftest import validate_image_type
 
 @pytest.fixture(scope="module")
 def detector():
-    return SamDetector.from_pretrained()
+    return ZoeDetector.from_pretrained()
 
 
 @pytest.mark.parametrize("output_type", ["pil", "np"])

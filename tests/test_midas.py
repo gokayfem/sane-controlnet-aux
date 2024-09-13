@@ -8,7 +8,7 @@ import pytest
 from tests.conftest import validate_image_type
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def detector():
     return MidasDetector.from_pretrained()
 

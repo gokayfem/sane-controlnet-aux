@@ -12,6 +12,7 @@ from .pidi import PiDiDetector  # noqa
 from .teed import TEEDDetector  # noqa
 from .midas import MidasDetector  # noqa
 from .sam import SamDetector  # noqa
+from .zoe import ZoeDetector  # noqa
 
 __all__ = [
     "DWPoseDetector",
@@ -24,4 +25,5 @@ __all__ = [
     "TEEDDetector",
     "MidasDetector",
     "SamDetector",
+    "ZoeDetector",
 ]
