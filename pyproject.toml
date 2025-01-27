@@ -23,7 +23,7 @@ dependencies = [
     "torchvision",
     "scikit-image",
     "timm==0.6.13",
-    "depth-anything-v2@https://github.com/gokayfem/Depth-Anything-V2",
+    "depth-anything-v2@git+https://github.com/gokayfem/Depth-Anything-V2.git",
     "einops",
     "segment-anything@git+https://github.com/facebookresearch/segment-anything.git",
 ]
